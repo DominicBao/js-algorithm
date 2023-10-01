@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+  <head></head>
+  <body style="margin: 0;">
+    <canvas id="myCanvas"></canvas>
+  </body>
+  <script>
+    const canvas = document.getElementById('myCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const circles = [
+      {
+        x: 10,
+        y: 10,
+        radius: 10,
+        color: 'rgb(255,0,0)',
+        name: 'circle1'
+      },
+      {
+        x: 70,
+        y: 70,
+        radius: 10,
+        color: 'rgb(0,255,0)',
+        name: 'circle2'
+      }
+    ];
+
+    // 画两个球，怎么监听点击到了这两个球
+    circles.forEach(circle => {
+      ctx.beginPath();
+      ctx.arc(circle.x, circle.y, circle.radius, 0, 2 * Math.PI, false);
+      ctx.fillStyle = circle.color;
+      ctx.fill();
+    });
+
+    // // 方式1，数学方式
+    // // 判断鼠标点击位置和球的位置
+    // // 注意要保证鼠标位置和canvas位置的一致性
+    // function isIntersect(point, circle) {
+    //   return Math.sqrt((point.x-circle.x) ** 2 + (point.y - circle.y) ** 2) < circle.radius;
+    // }
+    // canvas.addEventListener('click', (e) => {
+    //   const pos = {
+    //     x: e.clientX,
+    //     y: e.clientY
+    //   };
+    //   circles.forEach(circle => {
+    //     if (isIntersect(pos, circle)) {
+    //       console.log('click circle' + circle.name)
+    //     }
+    //   });
+    // });
+
+
+    // 方式二，模拟点击区域
+    // 核心就是取到点击位置的颜色，通过判断颜色去判断是否点击到了
+    const hitCanvas = document.createElement('canvas');
+    const hitCtx = hitCanvas.getContext('2d');
+
+    // 颜色数组，用来存放唯一的颜色
+    const getRandomColor = () => {
+      const r = Math.round(Math.random() * 255);
+      const g = Math.round(Math.random() * 255);
+      const b = Math.round(Math.random() * 255);
+      return `rgb(${r},${g},${b})`;
+    }
+
+    const colorsHash = {}
+    circles.forEach(circle => {
+      // 确保每个球的颜色key是不同的
+      while(true) {
+        const colorKey = getRandomColor();
+        if (!colorsHash[colorKey]) {
+            circle.colorKey = colorKey;
+            colorsHash[colorKey] = circle;
+            return;
+        }
+      }
+    });
+
+    // 在看不见的画布上，再画一次圆
+    circles.forEach(circle => {
+      hitCtx.beginPath();
+      hitCtx.arc(circle.x, circle.y, circle.radius, 0, 2 * Math.PI, false);
+      hitCtx.fillStyle = circle.colorKey;
+      hitCtx.fill();
+    });
+
+    function hasSameColor(color, circle) {
+      return circle.colorKey === color;
+    }
+
+    canvas.addEventListener('click', (e) => {
+      const mousePos = {
+        x: e.clientX - canvas.offsetTop,
+        y: e.clientY - canvas.offsetLeft
+      };
+      // 获取点击canvas上的颜色
+      const pixel = hitCtx.getImageData(mousePos.x, mousePos.y, 1, 1).data;
+      const color = `rgb(${pixel[0]},${pixel[1]},${pixel[2]})`;
+
+      circles.forEach(circle => {
+        if (hasSameColor(color, circle)) {
+          console.log('click circle ' + circle.name)
+        }
+      });
+    });
+  </script>
+</html>
