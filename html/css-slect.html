@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+  <head></head>
+  <body>
+    <section>
+      <style>
+        section p {
+          color: blue;
+        }
+
+        section > p {
+          background-color: yellow;
+        }
+
+        h2 + p {
+          text-transform: uppercase;
+        }
+
+        h2 ~ p {
+          border: 1px dashed black;
+        }
+
+
+
+        /* 属性选择器 */
+        [attr='1234'] {
+          color: red;
+        }
+
+        /* 伪类 */
+        [attr='1234']:hover {
+          color: green;
+        }
+
+        /* 伪元素 */
+        [attr='1234']::after {
+          content: '标题';
+          color: aqua;
+        }
+      </style>
+      <h2 attr="1234">Heading 1</h2>
+      <p>Paragraph 1</p>
+      <p>Paragraph 2</p>
+      <div>
+        <h2>Heading 2</h2>
+        <p>Paragraph 3</p>
+        <p>Paragraph 4</p>
+      </div>
+    </section>
+  </body>
+</html>
