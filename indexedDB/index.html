@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <div>indexedDB</div>
+</body>
+<script>
+  const DATABASE_NAME = 'myDb'
+  // 打开数据库
+  const request = window.indexedDB.open(DATABASE_NAME);
+
+  request.onerror = function (event) {
+    console.log('数据库打开报错');
+  };
+
+  // 成功时
+  let db;
+
+  // 打开数据库
+  request.onsuccess = function (event) {
+    db = request.result;
+
+    console.log(db, '数据库打开成功');
+    // add()
+    readAll()
+    update()
+    readAll()
+    remove()
+    readAll()
+  };
+
+  // 创建数据库
+  request.onupgradeneeded = (event) => {
+    // 保存 IDBDatabase 接口
+    db = event.target.result;
+    console.log('数据库创建成功')
+
+    // 为数据库创建对象存储（objectStore）
+    const objectStore = db.createObjectStore("person", { keyPath: "id" });
+    objectStore.createIndex('name', 'name', { unique: false });
+    objectStore.createIndex('email', 'email', { unique: true });
+    console.log(objectStore, 'objectStore')
+  };
+
+  // 添加新数据
+  const add = () => {
+    const addRequest = db.transaction(['person'], 'readwrite')
+      .objectStore('person')
+      .add({ id: '9', name: '张三9', email: 'zhangsan@example9.com' });
+
+    addRequest.onsuccess = function (event) {
+      console.log('数据写入成功');
+    };
+
+    addRequest.onerror = function (event) {
+      console.log('数据写入失败', event);
+    }
+  }
+
+  // 遍历所有数据
+  const readAll = () => {
+    const objectStore = db.transaction('person').objectStore('person');
+
+    objectStore.openCursor().onsuccess = function (event) {
+      var cursor = event.target.result;
+
+      if (cursor) {
+        console.log('Id: ' + cursor.key);
+        console.log('Name: ' + cursor.value.name);
+        console.log('Email: ' + cursor.value.email);
+        cursor.continue();
+      } else {
+        console.log('没有更多数据了！');
+      }
+    };
+  }
+
+  // 更新数据
+  const update = () => {
+    var updateRequest = db.transaction(['person'], 'readwrite')
+      .objectStore('person')
+      .put({ id: 9, name: '李四', email: 'lisi@example.com' });
+
+    updateRequest.onsuccess = function (event) {
+      console.log('数据更新成功');
+    };
+
+    updateRequest.onerror = function (event) {
+      console.log('数据更新失败');
+    }
+  }
+
+  // 删除数据
+  function remove() {
+    const removeRequest = db.transaction(['person'], 'readwrite')
+      .objectStore('person')
+      .delete(9);
+
+    removeRequest.onsuccess = function (event) {
+      console.log('数据删除成功');
+    };
+  }
+</script>
+</html>
